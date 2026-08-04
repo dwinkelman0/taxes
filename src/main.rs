@@ -43,16 +43,18 @@ fn main() {
     let contribution_401k = inputs.contribution_401k.unwrap_or(limits.max_401k);
     let contribution_hsa = inputs.contribution_hsa.unwrap_or(limits.max_hsa);
 
+    // Calculate CA tax first (SALT depends on this)
     let ca_taxable = inputs.income as f64 - contribution_401k as f64;
     let ca_tax = ca_schedule.get_amount_owed(ca_taxable);
 
-    let federal_taxable = inputs.income as f64
-        - contribution_401k as f64
-        - contribution_hsa as f64
-        - (limits.max_salt_deduction as f64).min(ca_tax);
+    let fica_ss = limits.social_security.get_amount_owed(inputs.income as f64);
+    let fica_medicare = limits.medicare.get_amount_owed(inputs.income as f64);
+    let salt_deduction = (limits.max_salt_deduction as f64).min(ca_tax);
+    let federal_taxable =
+        inputs.income as f64 - contribution_401k as f64 - contribution_hsa as f64 - salt_deduction;
     let federal_tax = federal_schedule.get_amount_owed(federal_taxable);
 
-    let total_tax = federal_tax + ca_tax;
+    let total_tax = federal_tax + ca_tax + fica_ss + fica_medicare;
     let net_income =
         inputs.income as f64 - contribution_401k as f64 - contribution_hsa as f64 - total_tax;
 
@@ -60,6 +62,9 @@ fn main() {
     println!("Gross income: ${:.2}", inputs.income as f64);
     println!("401k contribution: ${:.2}", contribution_401k as f64);
     println!("HSA contribution: ${:.2}", contribution_hsa as f64);
+    println!("Social Security tax: ${:.2}", fica_ss);
+    println!("Medicare tax: ${:.2}", fica_medicare);
+    println!("SALT deduction: ${:.2}", salt_deduction);
     println!("Federal taxable income: ${:.2}", federal_taxable);
     println!("CA taxable income: ${:.2}", ca_taxable);
     println!("Federal tax: ${:.2}", federal_tax);
