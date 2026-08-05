@@ -2,6 +2,13 @@
     "max_401k": 24500,
     "max_hsa": 4400,
     "max_salt_deduction": 40400,
+    "ca_standard_deduction": {
+        "Single": 5706,
+        "MarriedJointly": 11412,
+        "MarriedSeparately": 5706,
+        "HeadOfHousehold": 11412,
+        "SurvivingSpouse": 11412
+    },
     "social_security": [
         {
             "lower_bound": 0,
